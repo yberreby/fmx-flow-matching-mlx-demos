@@ -2,52 +2,22 @@
 
 > Exploratory agentic engineering with Claude Opus 4.8.
 
+Flow matching in
+[MLX](https://github.com/ml-explore/mlx), on 2D toy distributions and MNIST.
+
 ![MNIST sampling trajectories: Gaussian noise on the left, generated digit on the right](assets/mnist_trajectories.png)
 
 Each row is one MNIST sample, integrated left (`t=0`, Gaussian noise) to right
-(`t=1`, generated digit): straight-line flow matching in
-[MLX](https://github.com/ml-explore/mlx), on 2D toy distributions and MNIST.
-
-## The method
-
-Take a noise sample `x0 ~ N(0, I)` and a data sample `x1`, and draw the straight
-line between them:
-
-```
-x_t = (1 - t) * x0 + t * x1,   t in [0, 1]
-```
-
-This line moves at a constant velocity `x1 - x0`. A network `v(t, x)` is trained
-to predict that velocity by least squares:
-
-```
-loss = mean || v(t, x_t) - (x1 - x0) ||^2
-```
-
-At a given point `x` and time `t`, many noise/data lines pass through, each with
-its own velocity. The least-squares minimiser is their average — the *marginal*
-velocity field that transports noise into data. To generate a sample, start from
-noise and follow that field by integrating the ODE `dx/dt = v(t, x)` from `t = 0`
-to `t = 1`. The number of integration steps is a free knob at sampling time:
-straighter trajectories need fewer steps.
-
-The training loss is an average over that per-point velocity spread, so a low loss
-does not imply good samples — it cannot drop to zero. Quality is judged by
-sampling instead: matching target moments, trajectory straightness, and, for a
-Gaussian target, the closed-form velocity field in `fmx.analytic` as an exact
-oracle (`fmx/test_flow.py`).
-
-## Setup
-
-```bash
-uv sync --all-groups
-```
+(`t=1`, generated digit).
 
 ## Demos
 
-Each demo is a [tyro](https://github.com/brentyi/tyro) CLI; run with `--help` to
-see every flag. The 2D demos train in seconds; MNIST takes a few minutes on
-Apple Silicon. Checkpoints and plots land under `outputs/`.
+Each demo is a [tyro](https://github.com/brentyi/tyro) CLI; try `--help`.
+
+The 2D demos train in a few seconds; MNIST takes a few minutes on
+an M4 Pro.
+
+Checkpoints and plots in `outputs/`.
 
 ```bash
 uv run examples/toy2d.py --dataset two_moons   # MLP on a 2D toy
@@ -111,11 +81,9 @@ fmx
 │       └── two_moons(n: int, noise: float) -> mlx.core.array
 ├── nets
 │   ├── embed
-│   │   └── fourier_time_embed(t: mlx.core.array, n_freqs: int) -> 
-│   │       mlx.core.array
+│   │   └── fourier_time_embed(t: mlx.core.array, n_freqs: int) -> mlx.core.array
 │   ├── mlp
-│   │   ├── MLPConfig(dim: int, width: int, depth: int, n_time_freqs: int) -> 
-│   │   │   None
+│   │   ├── MLPConfig(dim: int, width: int, depth: int, n_time_freqs: int) -> None
 │   │   └── VelocityMLP(cfg: MLPConfig)
 │   └── unet
 │       ├── ResBlock(in_ch: int, out_ch: int, t_dim: int, n_groups: int)
@@ -182,8 +150,7 @@ fmx
 │       │       lim: float,
 │       │       n: int,
 │       │   ) -> None
-│       ├── panel_samples(ax, gen: mlx.core.array, data: mlx.core.array, lim: 
-│       │   float) -> None
+│       ├── panel_samples(ax, gen: mlx.core.array, data: mlx.core.array, lim: float) -> None
 │       ├── panel_step_sweep(
 │       │       ax,
 │       │       model: mlx.nn.layers.base.Module,
@@ -191,8 +158,7 @@ fmx
 │       │       steps_list: tuple[int, ...],
 │       │       n_samples: int,
 │       │   ) -> None
-│       └── panel_trajectories(ax, traj: mlx.core.array, lim: float, k: int) -> 
-│           None
+│       └── panel_trajectories(ax, traj: mlx.core.array, lim: float, k: int) -> None
 ├── sample
 │   └── sample(
 │           model: mlx.nn.layers.base.Module,
@@ -231,13 +197,8 @@ fmx
             batch: int,
             lr: float,
             grad_clip: float,
-            couple: Optional[collections.abc.Callable[[mlx.core.array, 
-        mlx.core.array], tuple[mlx.core.array, mlx.core.array]]],
+            couple: Optional[collections.abc.Callable[[mlx.core.array, mlx.core.array], tuple[mlx.core.array, mlx.core.array]]],
             log_every: int,
             on_log: Optional[collections.abc.Callable[[int, dict], NoneType]],
         ) -> list[tuple[int, float]]
 ```
-
-## Working on this repo
-
-See [AGENTS.md](AGENTS.md) for the bar. `uv run just` runs every check.
