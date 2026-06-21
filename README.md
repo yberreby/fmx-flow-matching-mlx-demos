@@ -22,19 +22,15 @@ Checkpoints and plots in `outputs/`.
 ```bash
 uv run examples/toy2d.py --dataset two_moons   # MLP on a 2D toy
 uv run examples/mnist.py                        # UNet on MNIST
-uv run examples/coupling.py                     # independent vs OT pairing
 uv run examples/inspect_ckpt.py --ckpt outputs/mnist/ckpt
 uv run examples/time_slider.py                  # scrub t on a trained image model
 uv run examples/mnist_interactive.py            # live, retunable MNIST training
 ```
 
-- **toy2d** — trains the MLP and saves a dashboard: velocity field, generated
+- **toy2d** — trains an MLP and saves a dashboard: velocity field, generated
   samples over the target, noise→data trajectories, and a step-count sweep.
-- **mnist** — trains the UNet, checkpoints periodically so `time_slider` can load
+- **mnist** — trains a UNet, checkpoints periodically so `time_slider` can load
   a run mid-training, and saves a sample/trajectory/loss dashboard.
-- **coupling** — independent random pairing vs minibatch optimal-transport
-  pairing, side by side, showing how OT straightens trajectories and sharpens
-  few-step generation.
 - **inspect_ckpt** — weight and behaviour report for any checkpoint; flags a
   network that ignores `t` or `x` (the canonical silent flow-matching bug).
 - **time_slider** — loads a trained image checkpoint and lets you drag `t` to see
@@ -59,12 +55,6 @@ fmx
 │   ├── latest_ckpt()
 │   ├── load()
 │   └── save()
-├── coupling
-│   ├── couple_ot(
-│   │       x0: mlx.core.array,
-│   │       x1: mlx.core.array,
-│   │   ) -> tuple[mlx.core.array, mlx.core.array]
-│   └── straightness(traj: mlx.core.array) -> mlx.core.array
 ├── data
 │   ├── mnist
 │   │   ├── batch_sampler(
@@ -81,9 +71,11 @@ fmx
 │       └── two_moons(n: int, noise: float) -> mlx.core.array
 ├── nets
 │   ├── embed
-│   │   └── fourier_time_embed(t: mlx.core.array, n_freqs: int) -> mlx.core.array
+│   │   └── fourier_time_embed(t: mlx.core.array, n_freqs: int) -> 
+│   │       mlx.core.array
 │   ├── mlp
-│   │   ├── MLPConfig(dim: int, width: int, depth: int, n_time_freqs: int) -> None
+│   │   ├── MLPConfig(dim: int, width: int, depth: int, n_time_freqs: int) -> 
+│   │   │   None
 │   │   └── VelocityMLP(cfg: MLPConfig)
 │   └── unet
 │       ├── ResBlock(in_ch: int, out_ch: int, t_dim: int, n_groups: int)
@@ -150,7 +142,8 @@ fmx
 │       │       lim: float,
 │       │       n: int,
 │       │   ) -> None
-│       ├── panel_samples(ax, gen: mlx.core.array, data: mlx.core.array, lim: float) -> None
+│       ├── panel_samples(ax, gen: mlx.core.array, data: mlx.core.array, lim: 
+│       │   float) -> None
 │       ├── panel_step_sweep(
 │       │       ax,
 │       │       model: mlx.nn.layers.base.Module,
@@ -158,7 +151,8 @@ fmx
 │       │       steps_list: tuple[int, ...],
 │       │       n_samples: int,
 │       │   ) -> None
-│       └── panel_trajectories(ax, traj: mlx.core.array, lim: float, k: int) -> None
+│       └── panel_trajectories(ax, traj: mlx.core.array, lim: float, k: int) -> 
+│           None
 ├── sample
 │   └── sample(
 │           model: mlx.nn.layers.base.Module,
@@ -197,7 +191,6 @@ fmx
             batch: int,
             lr: float,
             grad_clip: float,
-            couple: Optional[collections.abc.Callable[[mlx.core.array, mlx.core.array], tuple[mlx.core.array, mlx.core.array]]],
             log_every: int,
             on_log: Optional[collections.abc.Callable[[int, dict], NoneType]],
         ) -> list[tuple[int, float]]

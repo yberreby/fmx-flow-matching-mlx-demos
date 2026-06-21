@@ -6,7 +6,6 @@ import mlx.optimizers as optim
 from mlx.core import array
 
 Sampler = Callable[[int], array]
-Couple = Callable[[array, array], tuple[array, array]]
 
 
 def progress_line(step: int, metrics: dict) -> str:
@@ -37,7 +36,7 @@ def make_step(model: nn.Module, opt: optim.Optimizer, grad_clip: float = 1.0):
 
 
 def train(model: nn.Module, sampler: Sampler, *, steps: int, batch: int,
-          lr: float = 3e-4, grad_clip: float = 1.0, couple: Couple | None = None,
+          lr: float = 3e-4, grad_clip: float = 1.0,
           log_every: int = 200,
           on_log: Callable[[int, dict], None] | None = None,
           ) -> list[tuple[int, float]]:
@@ -47,8 +46,6 @@ def train(model: nn.Module, sampler: Sampler, *, steps: int, batch: int,
     for i in range(steps):
         x1 = sampler(batch)
         x0 = mx.random.normal(x1.shape)
-        if couple is not None:
-            x0, x1 = couple(x0, x1)
         t = mx.random.uniform(0, 1, (batch,))
         loss, grad_norm = step(x0, x1, t)
         if i % log_every == 0 or i == steps - 1:

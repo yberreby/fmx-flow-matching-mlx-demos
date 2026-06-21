@@ -22,19 +22,15 @@ Checkpoints and plots in `outputs/`.
 ```bash
 uv run examples/toy2d.py --dataset two_moons   # MLP on a 2D toy
 uv run examples/mnist.py                        # UNet on MNIST
-uv run examples/coupling.py                     # independent vs OT pairing
 uv run examples/inspect_ckpt.py --ckpt outputs/mnist/ckpt
 uv run examples/time_slider.py                  # scrub t on a trained image model
 uv run examples/mnist_interactive.py            # live, retunable MNIST training
 ```
 
-- **toy2d** — trains the MLP and saves a dashboard: velocity field, generated
+- **toy2d** — trains an MLP and saves a dashboard: velocity field, generated
   samples over the target, noise→data trajectories, and a step-count sweep.
-- **mnist** — trains the UNet, checkpoints periodically so `time_slider` can load
+- **mnist** — trains a UNet, checkpoints periodically so `time_slider` can load
   a run mid-training, and saves a sample/trajectory/loss dashboard.
-- **coupling** — independent random pairing vs minibatch optimal-transport
-  pairing, side by side, showing how OT straightens trajectories and sharpens
-  few-step generation.
 - **inspect_ckpt** — weight and behaviour report for any checkpoint; flags a
   network that ignores `t` or `x` (the canonical silent flow-matching bug).
 - **time_slider** — loads a trained image checkpoint and lets you drag `t` to see

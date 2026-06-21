@@ -3,7 +3,6 @@ import mlx.nn as nn
 
 from fmx.analytic import gaussian_marginal_field
 from fmx.checkpoint import latest_ckpt, load, save
-from fmx.coupling import couple_ot, straightness
 from fmx.data import toy_sampler
 from fmx.nets import MLPConfig, UNetConfig
 from fmx.sample import sample
@@ -79,20 +78,6 @@ def test_samples_match_target_moments():
     data = toy_sampler("two_moons")(5000)
     assert mx.abs(gen.mean(0) - data.mean(0)).max().item() < 0.15
     assert mx.abs(gen.std(0) - data.std(0)).max().item() < 0.15
-
-
-def test_ot_coupling_is_a_permutation_that_lowers_cost():
-    mx.random.seed(0)
-    x0 = mx.random.normal((64, 2))
-    x1 = mx.random.normal((64, 2))
-    a0, a1 = couple_ot(x0, x1)
-    assert mx.allclose(mx.sort(a1, axis=0), mx.sort(x1, axis=0))  # still a permutation
-    assert ((a0 - a1) ** 2).sum().item() <= ((x0 - x1) ** 2).sum().item() + 1e-4
-
-
-def test_straightness_is_one_for_a_straight_path():
-    line = mx.stack([mx.zeros((5, 2)), mx.full((5, 2), 0.5), mx.ones((5, 2))])
-    assert mx.abs(straightness(line) - 1.0).max().item() < 1e-3
 
 
 def test_checkpoint_roundtrip(tmp_path):
